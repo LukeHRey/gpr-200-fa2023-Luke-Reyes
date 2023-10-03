@@ -34,6 +34,10 @@ unsigned short indices[6] = {
 	2, 3, 0
 };
 
+//Timer
+clock_t start;
+float iTime = 0.0;
+
 int main() {
 	printf("Initializing...");
 	if (!glfwInit()) {
@@ -70,9 +74,13 @@ int main() {
 	lr::Shader characterShader("assets/character.vert", "assets/character.frag");
 
 	unsigned int bgtexture = loadTexture("assets/supermarket.jpg", GL_REPEAT, GL_LINEAR);
-	unsigned int chartexture = loadTexture("assets/lemon.png", GL_REPEAT, GL_LINEAR);
+	unsigned int noisetexture = loadTexture("assets/noise.png", GL_REPEAT, GL_LINEAR);
+	unsigned int chartexture = loadTexture("assets/lemon.png", GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	while (!glfwWindowShouldClose(window)) {
+		//Update iTime
+		iTime = (std::clock() - start) / (double)(CLOCKS_PER_SEC);
+
 		glfwPollEvents();
 		glClearColor(0.3f, 0.4f, 0.9f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
@@ -81,17 +89,27 @@ int main() {
 
 		//Draw background
 		backgroundShader.use();
+		backgroundShader.setFloat("iTime", iTime);
+
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, bgtexture);
-		shader.setInt("_SupermarketTexture", 0);
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, noisetexture);
+
+		backgroundShader.setInt("_SupermarketTexture", 0);
+		backgroundShader.setInt("_NoiseTexture", 1);
+
 
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
 		//Draw character
 		characterShader.use();
+		characterShader.setFloat("iTime", iTime);
+
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, chartexture);
-		shader.setInt("_CharacterTexture", 0);
+		characterShader.setInt("_CharacterTexture", 0);
 
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
