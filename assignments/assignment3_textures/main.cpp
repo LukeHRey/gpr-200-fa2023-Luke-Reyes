@@ -9,6 +9,8 @@
 #include <imgui_impl_opengl3.h>
 
 #include <ew/shader.h>
+#include <lr/texture.h>
+#include <lr/shader.h>
 
 struct Vertex {
 	float x, y, z;
@@ -64,15 +66,37 @@ int main() {
 
 	glBindVertexArray(quadVAO);
 
+	lr::Shader backgroundShader("assets/background.vert", "assets/background.frag");
+	lr::Shader characterShader("assets/character.vert", "assets/character.frag");
+
+	unsigned int bgtexture = loadTexture("assets/supermarket.jpg", GL_REPEAT, GL_LINEAR);
+	unsigned int chartexture = loadTexture("assets/lemon.png", GL_REPEAT, GL_LINEAR);
+
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
 		glClearColor(0.3f, 0.4f, 0.9f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		//Set uniforms
-		shader.use();
+		glBindVertexArray(quadVAO); //Both use same quad mesh
+
+		//Draw background
+		backgroundShader.use();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, bgtexture);
+		shader.setInt("_SupermarketTexture", 0);
 
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
+
+		//Draw character
+		characterShader.use();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, chartexture);
+		shader.setInt("_CharacterTexture", 0);
+
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
+
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 		//Render UI
 		{
