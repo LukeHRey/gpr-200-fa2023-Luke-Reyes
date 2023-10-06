@@ -8,7 +8,7 @@ struct Transform {
 	ew::Vec3 scale = ew::Vec3(1.0f, 1.0f, 1.0f);
 	ew::Mat4 getModelMatrix() const {
 		//TODO
-		return ew::RotateZ(ew::Radians(rotations.z) * ew::Scale(scale));
+		//return ew::RotateZ(ew::Radians(rotations.z) * ew::Scale(scale));
 	}
 };
 

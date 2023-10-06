@@ -12,6 +12,8 @@
 #include <ew/ewMath/vec3.h>
 #include <ew/procGen.h>
 
+#include <lr/transformations.h>
+
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 
 //Square aspect ratio for now. We will account for this with projection later.
@@ -55,6 +57,8 @@ int main() {
 	
 	//Cube mesh
 	ew::Mesh cubeMesh(ew::createCube(0.5f));
+
+	Transform transform;
 	
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
