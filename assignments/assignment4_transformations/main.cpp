@@ -66,6 +66,7 @@ int main() {
 		shader.use();
 
 		//TODO: Set model matrix uniform
+		shader.setMat4("_Model", transform.getModelMatrix());
 
 		cubeMesh.draw();
 
