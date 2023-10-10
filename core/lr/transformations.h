@@ -1,16 +1,7 @@
 #pragma once
 #include "../ew/ewMath/mat4.h"
 #include "../ew/ewMath/vec3.h"
-
-struct Transform {
-	ew::Vec3 position = ew::Vec3(0.0f, 0.0f, 0.0f);
-	ew::Vec3 rotation = ew::Vec3(0.0f, 0.0f, 0.0f);	//Euler angles (degrees)
-	ew::Vec3 scale = ew::Vec3(1.0f, 1.0f, 1.0f);
-	ew::Mat4 getModelMatrix() const {
-		//TODO
-		//return ew::RotateZ(ew::Radians(rotations.z) * ew::Scale(scale));
-	}
-};
+#include "../ew/ewMath/ewMath.h"
 
 namespace lr {
 	//Identity matrix
@@ -36,20 +27,67 @@ namespace lr {
 	//Rotation around X axis (pitch) in radians
 	inline ew::Mat4 RotateX(float rad) {
 		//TODO
+		rad = rad * ew::DEG2RAD;
+		return ew::Mat4(
+			1, 0, 0, 0,
+			0, cos(rad), -sin(rad), 0,
+			0, sin(rad), cos(rad), 0,
+			0, 0, 0, 1
+		);
 	};
 
 	//Rotation around Y axis (yaw) in radians
 	inline ew::Mat4 RotateY(float rad) {
 		//TODO
+		rad = rad * ew::DEG2RAD;
+		return ew::Mat4(
+			cos(rad), 0, sin(rad), 0,
+			0, 1, 0, 0,
+			-sin(rad), 0, cos(rad), 0,
+			0, 0, 0, 1
+		);
 	};
 
 	//Rotation around Z axis (roll) in radians
 	inline ew::Mat4 RotateZ(float rad) {
 		//TODO
+
+		rad = rad * ew::DEG2RAD;
+		return ew::Mat4(
+			cos(rad), -sin(rad), 0 , 0,
+			sin(rad), cos(rad), 0, 0,
+			0, 0, 1, 0,
+			0, 0, 0, 1
+		);
+
 	};
 
 	//Translate x,y,z
 	inline ew::Mat4 Translate(ew::Vec3 t) {
 		//TODO
+		return ew::Mat4(
+			1, 0, 0, t.x,
+			0, 1, 0, t.y,
+			0, 0, 1, t.z,
+			0, 0, 0, 1
+		);
+
 	};
 }
+
+struct Transform {
+	ew::Vec3 position = ew::Vec3(0.0f, 0.0f, 0.0f);
+	ew::Vec3 rotation = ew::Vec3(0.0f, 0.0f, 0.0f);	//Euler angles (degrees)
+	ew::Vec3 scale = ew::Vec3(1.0f, 1.0f, 1.0f);
+	ew::Mat4 getModelMatrix() const {
+		//TODO
+		//Scales
+		ew::Mat4 modelMatrix = lr::Scale(scale);
+		//Rotates
+		modelMatrix = lr::RotateY(rotation.y) * (lr::RotateX(rotation.x) * (lr::RotateZ(rotation.z) * modelMatrix));
+		//Translates
+		modelMatrix = lr::Translate(position) * modelMatrix;
+
+		return  modelMatrix;
+	}
+};

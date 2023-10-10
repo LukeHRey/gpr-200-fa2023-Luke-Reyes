@@ -20,6 +20,12 @@ void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 const int SCREEN_WIDTH = 720;
 const int SCREEN_HEIGHT = 720;
 
+//Timer
+clock_t start;
+float iTime = 0.0;
+
+int NUM_CUBES = 4;
+
 int main() {
 	printf("Initializing...");
 	if (!glfwInit()) {
@@ -57,22 +63,38 @@ int main() {
 	
 	//Cube mesh
 	ew::Mesh cubeMesh(ew::createCube(0.5f));
+	int nums[3]{ 1, 2 , 3 };
+	Transform cubeTransformations[4];
+	for (int i = 0; i < NUM_CUBES; i++) {
+		Transform t;
+		t.position.x =   ( - 1 + 2 * (i % 2))/2.0;
+		if (i < 2) {
+			t.position.y = 1/2.0;
+		}
+		else {
+			t.position.y = -1/2.0;
+		}
+		cubeTransformations[i] = t;
 
-	Transform transform;
+	}
 	
 	while (!glfwWindowShouldClose(window)) {
+		//Update iTime
+		iTime = (std::clock() - start) / (double)(CLOCKS_PER_SEC);
+
 		glfwPollEvents();
 		glClearColor(0.3f, 0.4f, 0.9f, 1.0f);
 		//Clear both color buffer AND depth buffer
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		for (int i = 0; i < NUM_CUBES; i++) {
+			//Set uniforms
+			shader.use();
 
-		//Set uniforms
-		shader.use();
+			//TODO: Set model matrix uniform
+			shader.setMat4("_Model", cubeTransformations[i].getModelMatrix());
 
-		//TODO: Set model matrix uniform
-		shader.setMat4("_Model", transform.getModelMatrix());
-
-		cubeMesh.draw();
+			cubeMesh.draw();
+		}
 
 		//Render UI
 		{
@@ -80,8 +102,18 @@ int main() {
 			ImGui_ImplOpenGL3_NewFrame();
 			ImGui::NewFrame();
 
-			ImGui::Begin("Transform");
-			ImGui::End();
+			for (size_t i = 0; i < NUM_CUBES; i++)
+			{
+				ImGui::PushID(i);
+				if (ImGui::CollapsingHeader("Transform")) {
+
+					ImGui::DragFloat3("Position", &cubeTransformations[i].position.x, 0.05f);
+					ImGui::DragFloat3("Rotation", &cubeTransformations[i].rotation.x, 1.0f);
+					ImGui::DragFloat3("Scale", &cubeTransformations[i].scale.x, 0.05f);
+				}
+				ImGui::PopID();
+			}
+
 
 			ImGui::Render();
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
