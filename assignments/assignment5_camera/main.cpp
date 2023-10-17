@@ -25,17 +25,17 @@ ew::Transform cubeTransforms[NUM_CUBES];
 int main() {
 	//Creates camera
 	lr::Camera cam;
-	cam.aspectRatio = SCREEN_WIDTH * 1.0 / SCREEN_HEIGHT * 1.0;
-	cam.farPlane = 100;
-	cam.fov = 60;
-	cam.nearPlane = 0.1;
-	cam.orthographic = 1;
-	cam.orthoSize = 6;
+	cam.aspectRatio = static_cast<float>(SCREEN_WIDTH * 1.0) / static_cast<float>(SCREEN_HEIGHT * 1.0);
+	cam.farPlane = 100.0f;
+	cam.fov = 60.0f;
+	cam.nearPlane = 0.1f;
+	cam.orthographic = true;
+	cam.orthoSize = 6.0f;
 
 	//Stuff for gui
 	bool orbit = 0;
-	float camPos[3]{ 0,0,5 };
-	float camTarget[3]{ 0,0,0 };
+	float camPos[3]{ 0.0f,0.0f,5.0f };
+	float camTarget[3]{ 0.0,0.0,0.0 };
 
 	printf("Initializing...");
 	if (!glfwInit()) {

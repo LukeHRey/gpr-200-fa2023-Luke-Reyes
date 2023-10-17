@@ -82,13 +82,16 @@ namespace lr {
 		ew::Mat4 viewMat;
 		ew::Vec3 f, r, u;
 		f = ew::Normalize(eye - target);
+		//f = ew::Normalize(target - eye);
 		r = ew::Normalize(ew::Cross(up, f));
+		//r = ew::Normalize(ew::Cross(f, up));
 		u = ew::Normalize(ew::Cross(f, r));
+		//u = ew::Normalize(ew::Cross(r, f));
 		viewMat = ew::Mat4(
 			r.x, r.y, r.z, -ew::Dot(r, eye),
 			u.x, u.y, u.z, -ew::Dot(u, eye),
-			f.x, f.x, f.z, -ew::Dot(f, eye),
-			0, 0, 0, 1
+			-f.x, -f.y, -f.z, ew::Dot(f, eye),
+			0.0, 0.0, 0.0, 1.0
 		);
 		return viewMat;
 	};
@@ -101,10 +104,10 @@ namespace lr {
 		float l = -r;	//left bounds
 		float b = -t;	//bottom bounds
 		return ew::Mat4(
-			2.0 / (r - 1.0), 0, 0, -(r + l) / (r - l),
-			0, 2.0 / (t - b), 0, -(t + b) / (t - b),
-			0, 0, -2.0 / (far - near), -(far + near) / (far - near),
-			0, 0, 0, 1
+			2.0 / (r - l), 0.0, 0.0, -(r + l) / (r - l),
+			0.0, 2.0 / (t - b), 0.0, -(t + b) / (t - b),
+			0.0, 0.0, -2.0 / (far - near), -(far + near) / (far - near),
+			0.0, 0.0, 0.0, 1.0
 		);
 	};
 	//Perspective projection
