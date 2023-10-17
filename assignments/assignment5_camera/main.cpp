@@ -11,6 +11,7 @@
 #include <ew/shader.h>
 #include <ew/procGen.h>
 #include <ew/transform.h>
+#include <lr/camera.h>
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 
@@ -22,6 +23,20 @@ const int NUM_CUBES = 4;
 ew::Transform cubeTransforms[NUM_CUBES];
 
 int main() {
+	//Creates camera
+	lr::Camera cam;
+	cam.aspectRatio = SCREEN_WIDTH * 1.0 / SCREEN_HEIGHT * 1.0;
+	cam.farPlane = 100;
+	cam.fov = 60;
+	cam.nearPlane = 0.1;
+	cam.orthographic = 1;
+	cam.orthoSize = 6;
+
+	//Stuff for gui
+	bool orbit = 0;
+	float camPos[3]{ 0,0,5 };
+	float camTarget[3]{ 0,0,0 };
+
 	printf("Initializing...");
 	if (!glfwInit()) {
 		printf("GLFW failed to init!");
@@ -67,6 +82,9 @@ int main() {
 	}
 
 	while (!glfwWindowShouldClose(window)) {
+		cam.position = ew::Vec3(camPos[0], camPos[1], camPos[2]);
+		cam.target = ew::Vec3(camTarget[0], camPos[1], camPos[2]);
+
 		glfwPollEvents();
 		glClearColor(0.3f, 0.4f, 0.9f, 1.0f);
 		//Clear both color buffer AND depth buffer
@@ -80,6 +98,8 @@ int main() {
 		{
 			//Construct model matrix
 			shader.setMat4("_Model", cubeTransforms[i].getModelMatrix());
+			shader.setMat4("_View", cam.ViewMatrix());
+			shader.setMat4("_Projection", cam.ProjectionMatrix());
 			cubeMesh.draw();
 		}
 
@@ -102,6 +122,13 @@ int main() {
 				ImGui::PopID();
 			}
 			ImGui::Text("Camera");
+				ImGui::Checkbox("Orbit", &orbit);
+				ImGui::DragFloat3("Position", &camPos[0]);
+				ImGui::DragFloat3("Target", &camTarget[0]);
+				ImGui::Checkbox("Orthographic", &cam.orthographic);
+				ImGui::DragFloat("Fov", &cam.fov, 0.1f, 0.0f, 500.0f);
+				ImGui::DragFloat("Near Plane", &cam.nearPlane, 0.1f, 0.0f, 500.0);
+				ImGui::DragFloat("Far Plane", &cam.farPlane, 0.1f, 0.0f, 500.0);
 			ImGui::End();
 			
 			ImGui::Render();

@@ -79,19 +79,43 @@ namespace lr {
 	//target = position to look at
 	//up = up axis, usually(0,1,0)
 	inline ew::Mat4 LookAt(ew::Vec3 eye, ew::Vec3 target, ew::Vec3 up) {
-		//...
-			//use ew::Cross for cross product!
-		ew::Cross(eye, target);
-		//ew::Normalize();
+		ew::Mat4 viewMat;
+		ew::Vec3 f, r, u;
+		f = ew::Normalize(eye - target);
+		r = ew::Normalize(ew::Cross(up, f));
+		u = ew::Normalize(ew::Cross(f, r));
+		viewMat = ew::Mat4(
+			r.x, r.y, r.z, -ew::Dot(r, eye),
+			u.x, u.y, u.z, -ew::Dot(u, eye),
+			f.x, f.x, f.z, -ew::Dot(f, eye),
+			0, 0, 0, 1
+		);
+		return viewMat;
 	};
 	//Orthographic projection
 	inline ew::Mat4 Orthographic(float height, float aspect, float near, float far) {
-		//...
+		float width = aspect * height;
+		height = width / aspect;
+		float r = width / 2.0;	//right bounds
+		float t = height / 2.0;	//top bounds
+		float l = -r;	//left bounds
+		float b = -t;	//bottom bounds
+		return ew::Mat4(
+			2.0 / (r - 1.0), 0, 0, -(r + l) / (r - l),
+			0, 2.0 / (t - b), 0, -(t + b) / (t - b),
+			0, 0, -2.0 / (far - near), -(far + near) / (far - near),
+			0, 0, 0, 1
+		);
 	};
 	//Perspective projection
 	//fov = vertical aspect ratio (radians)
 	inline ew::Mat4 Perspective(float fov, float aspect, float near, float far) {
-		//...
+		return ew::Mat4(
+			1.0 / (tan(fov / 2.0) * aspect), 0, 0, 0,
+			0, 1.0 / tan(fov / 2.0), 0, 0,
+			0, 0, (near + far) / (near - far), (2.0 * far * near) / (near - far),
+			0, 0, -1, 0
+		);
 	};
 
 }
