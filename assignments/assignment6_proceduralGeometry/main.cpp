@@ -15,6 +15,8 @@
 #include <ew/camera.h>
 #include <ew/cameraController.h>
 
+#include <lr/procGen.h>
+
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 void resetCamera(ew::Camera& camera, ew::CameraController& cameraController);
 
@@ -75,21 +77,62 @@ int main() {
 	glPointSize(3.0f);
 	glPolygonMode(GL_FRONT_AND_BACK, appSettings.wireframe ? GL_LINE : GL_FILL);
 
-	ew::Shader shader("assets/vertexShader.vert", "assets/fragmentShader.frag");
-	unsigned int brickTexture = ew::loadTexture("assets/brick_color.jpg",GL_REPEAT,GL_LINEAR);
+	int numCylinderSegments = 64;
+	int numSphereSegments = 64;
+	int numSubdivisions = 30;
 
 	//Create cube
 	ew::MeshData cubeMeshData = ew::createCube(0.5f);
 	ew::Mesh cubeMesh(cubeMeshData);
 
+	//Create sphere
+	ew::MeshData sphereMeshData = lr::createSphere(0.5, numSphereSegments);
+	ew::Mesh sphereMesh(sphereMeshData);
+
+	//Create cylinder
+	ew::MeshData cylinderMeshData = lr::createCylinder(1.0, 0.5, 64);
+	ew::Mesh cylinderMesh(cylinderMeshData);
+
+	//Create plane
+	ew::MeshData planeData = lr::createPlane(3, 3, numSubdivisions);
+	ew::Mesh planeMesh(planeData);
+
 	//Initialize transforms
 	ew::Transform cubeTransform;
 
+	ew::Transform sphereTransform;
+	sphereTransform.position = ew::Vec3(1.0f, 0.0f, 0.0f);
+
+	ew::Transform cylinderTransform;
+	cylinderTransform.position = ew::Vec3(2.5f, 0.0f, 0.0f);
+
+	ew::Transform planeTransform;
+	planeTransform.position = ew::Vec3(3.5f, 0.0f, 1.5f);
+
 	resetCamera(camera,cameraController);
 
+
 	while (!glfwWindowShouldClose(window)) {
+
+		//Create sphere
+		ew::MeshData sphereMeshData = lr::createSphere(0.5, numSphereSegments);
+		ew::Mesh sphereMesh(sphereMeshData);
+
+		//Create cylinder
+		ew::MeshData cylinderMeshData = lr::createCylinder(1.0, 0.5, numCylinderSegments);
+		ew::Mesh cylinderMesh(cylinderMeshData);
+
+		//Create plane
+		ew::MeshData planeData = lr::createPlane(3, 3, numSubdivisions);
+		ew::Mesh planeMesh(planeData);
+
 		glfwPollEvents();
 		camera.aspectRatio = (float)SCREEN_WIDTH / SCREEN_HEIGHT;
+
+		ew::Shader shader("assets/vertexShader.vert", "assets/fragmentShader.frag");
+		unsigned int brickTexture = ew::loadTexture("assets/brick_color.jpg", GL_REPEAT, GL_LINEAR);
+
+
 
 		float time = (float)glfwGetTime();
 		float deltaTime = time - prevTime;
@@ -121,6 +164,19 @@ int main() {
 		shader.setMat4("_Model", cubeTransform.getModelMatrix());
 		cubeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 
+		//Draw sphere
+		shader.setMat4("_Model", sphereTransform.getModelMatrix());
+		sphereMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+
+		//DrawCylinder
+		shader.setMat4("_Model", cylinderTransform.getModelMatrix());
+		cylinderMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+
+		//DrawPlane
+		shader.setMat4("_Model", planeTransform.getModelMatrix());
+		planeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+
+
 		//Render UI
 		{
 			ImGui_ImplGlfw_NewFrame();
@@ -145,6 +201,9 @@ int main() {
 				if (ImGui::Button("Reset")) {
 					resetCamera(camera, cameraController);
 				}
+				ImGui::DragFloat("Far Plane", &camera.farPlane, 0.1f, 0.0f);
+				ImGui::DragFloat("Move Speed", &cameraController.moveSpeed, 0.1f);
+				ImGui::DragFloat("Sprint Speed", &cameraController.sprintMoveSpeed, 0.1f);
 			}
 
 			ImGui::ColorEdit3("BG color", &appSettings.bgColor.x);
@@ -163,6 +222,9 @@ int main() {
 				else
 					glDisable(GL_CULL_FACE);
 			}
+			ImGui::DragInt("Sphere Segments", &numSphereSegments, 1.0f, 0, 100);
+			ImGui::DragInt("Cylinder Segments", &numCylinderSegments, 1.0f, 0, 100);
+			ImGui::DragInt("Plane Subdivisions", &numSubdivisions, 1.0f, 0, 100);
 			ImGui::End();
 			
 			ImGui::Render();
